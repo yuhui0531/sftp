@@ -2041,7 +2041,6 @@ func benchmarkRead(b *testing.B, bufsize int, delay time.Duration) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		defer f2.Close()
 
 		for offset < size {
 			n, err := io.ReadFull(f2, buf)
@@ -2056,6 +2055,8 @@ func benchmarkRead(b *testing.B, bufsize int, delay time.Duration) {
 
 			offset += n
 		}
+
+		f2.Close()
 	}
 }
 
@@ -2119,13 +2120,12 @@ func benchmarkWrite(b *testing.B, bufsize int, delay time.Duration) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		defer os.Remove(f.Name())
+		defer os.Remove(f.Name()) // actually queue up a series of removes for these files
 
 		f2, err := sftp.Create(f.Name())
 		if err != nil {
 			b.Fatal(err)
 		}
-		defer f2.Close()
 
 		for offset < size {
 			n, err := f2.Write(data[offset:min(len(data), offset+bufsize)])
